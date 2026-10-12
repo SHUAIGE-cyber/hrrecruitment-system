@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>登录测试</title>
+    <style>
+        body { font-family: Arial; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; }
+        .box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); width: 360px; }
+        h2 { text-align: center; margin-bottom: 30px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #409EFF; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #66b1ff; }
+        .msg { margin-top: 15px; padding: 10px; border-radius: 4px; display: none; }
+        .success { background: #f0f9ff; color: #67c23a; border: 1px solid #b3e19d; }
+        .error { background: #fef0f0; color: #f56c6c; border: 1px solid #fbc4c4; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>招聘管理系统 - 登录测试</h2>
+        <input type="text" id="username" placeholder="用户名" value="admin">
+        <input type="password" id="password" placeholder="密码" value="admin123">
+        <button onclick="login()">登录</button>
+        <div id="msg" class="msg"></div>
+        <div id="result" style="margin-top:20px; font-size:12px; color:#666; word-break:break-all;"></div>
+    </div>
+    <script>
+        async function login() {
+            const msg = document.getElementById('msg');
+            const result = document.getElementById('result');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            msg.style.display = 'none';
+            result.textContent = '';
+
+            try {
+                const res = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+                    msg.className = 'msg success';
+                    msg.textContent = '登录成功！Token 已保存';
+                    msg.style.display = 'block';
+                    result.textContent = 'Token: ' + data.data.token.substring(0, 50) + '...';
+                    result.textContent += '\n\n点击确定跳转到主页面';
+                    if (confirm('登录成功！跳转到主页面？')) {
+                        window.location.href = 'http://localhost:5173/dashboard';
+                    }
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = '登录失败: ' + (data.message || '未知错误');
+                    msg.style.display = 'block';
+                }
+            } catch (e) {
+                msg.className = 'msg error';
+                msg.textContent = '网络错误: ' + e.message;
+                msg.style.display = 'block';
+            }
+        }
+
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>
