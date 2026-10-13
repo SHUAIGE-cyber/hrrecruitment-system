@@ -3,10 +3,13 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs').promises;
 const { Candidate, Position, Interview } = require('../models');
-const { auth, authorize, maskPhone } = require('../middleware/auth');
+const { auth, authorize, deny, maskPhone } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const { parseResume, matchJDAndResume, generateInterviewQuestions } = require('../services/aiService');
 const { extractText } = require('../services/documentService');
+
+router.use(maskPhone);
+router.use(auth, deny('dept_manager'));
 
 // 获取候选人列表
 router.get('/', auth, async (req, res) => {
@@ -160,7 +163,7 @@ router.post('/:id/match/:positionId', auth, authorize('super_admin', 'hr'), asyn
       return res.status(404).json({ success: false, message: '候选人或岗位不存在' });
     }
 
-    const result = await matchJDAndResume(position, position.requirements, candidate.resumeText);
+    const result = await matchJDAndResume(position, position.requirements, candidate.resumeText, position.matchCriteria);
 
     // 更新匹配度
     candidate.matchScore = result.score;

@@ -71,6 +71,7 @@
             <el-option label="超级管理员" value="super_admin" />
             <el-option label="HR专员" value="hr" />
             <el-option label="部门面试官" value="interviewer" />
+            <el-option label="部门主管" value="dept_manager" />
           </el-select>
         </el-form-item>
         <el-form-item label="部门">
@@ -150,12 +151,12 @@ const rules = {
 }
 
 const getRoleName = (role) => {
-  const names = { super_admin: '超级管理员', hr: 'HR专员', interviewer: '部门面试官' }
+  const names = { super_admin: '超级管理员', hr: 'HR专员', interviewer: '部门面试官', dept_manager: '部门主管' }
   return names[role] || role
 }
 
 const getRoleType = (role) => {
-  const types = { super_admin: '', hr: 'success', interviewer: 'warning' }
+  const types = { super_admin: '', hr: 'success', interviewer: 'warning', dept_manager: 'primary' }
   return types[role] || ''
 }
 

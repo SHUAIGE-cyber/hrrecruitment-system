@@ -7,7 +7,7 @@
         <span v-show="!isCollapse">招聘管理</span>
       </div>
       <el-menu
-        :default-active="activeMenu"
+        :default-active="route.path"
         :collapse="isCollapse"
         :collapse-transition="false"
         background-color="#304156"
@@ -15,9 +15,14 @@
         active-text-color="#409EFF"
         router
       >
-        <el-menu-item index="/dashboard">
+        <el-menu-item index="/dashboard" v-if="!isDeptManager">
           <el-icon><DataAnalysis /></el-icon>
           <template #title>仪表盘</template>
+        </el-menu-item>
+
+        <el-menu-item index="/hiring-requests">
+          <el-icon><Tickets /></el-icon>
+          <template #title>招聘需求</template>
         </el-menu-item>
 
         <el-menu-item index="/positions" v-if="canAccess('super_admin', 'hr')">
@@ -25,12 +30,12 @@
           <template #title>岗位管理</template>
         </el-menu-item>
 
-        <el-menu-item index="/candidates">
+        <el-menu-item index="/candidates" v-if="!isDeptManager">
           <el-icon><User /></el-icon>
           <template #title>候选人管理</template>
         </el-menu-item>
 
-        <el-menu-item index="/kanban">
+        <el-menu-item index="/kanban" v-if="!isDeptManager">
           <el-icon><Operation /></el-icon>
           <template #title>面试看板</template>
         </el-menu-item>
@@ -40,7 +45,7 @@
           <template #title>Offer管理</template>
         </el-menu-item>
 
-        <el-menu-item index="/certificates">
+        <el-menu-item index="/certificates" v-if="!isDeptManager">
           <el-icon><Certificate /></el-icon>
           <template #title>证书管理</template>
         </el-menu-item>
@@ -60,21 +65,17 @@
             <Fold v-if="!isCollapse" />
             <Expand v-else />
           </el-icon>
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-            <el-breadcrumb-item>{{ currentTitle }}</el-breadcrumb-item>
-          </el-breadcrumb>
+          <span class="page-title">{{ route.meta.title || '首页' }}</span>
         </div>
         <div class="header-right">
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-avatar :size="32" icon="UserFilled" />
-              <span class="username">{{ authStore.user?.realName || authStore.user?.username }}</span>
+              <span class="username">{{ userName }}</span>
               <el-tag size="small" :type="roleTagType" effect="dark">{{ roleName }}</el-tag>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="profile">个人信息</el-dropdown-item>
                 <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -83,11 +84,7 @@
       </el-header>
 
       <el-main class="main">
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
+        <router-view />
       </el-main>
     </el-container>
   </el-container>
@@ -96,33 +93,37 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
 import { ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
-const authStore = useAuthStore()
 const isCollapse = ref(false)
 
-const activeMenu = computed(() => route.path)
-const currentTitle = computed(() => route.meta.title || '首页')
-
-const roleTagType = computed(() => {
-  const types = { super_admin: '', hr: 'success', interviewer: 'warning' }
-  return types[authStore.user?.role] || ''
+const user = computed(() => {
+  try {
+    return JSON.parse(localStorage.getItem('user') || 'null')
+  } catch {
+    return null
+  }
 })
 
+const userName = computed(() => user.value?.realName || user.value?.username || '用户')
 const roleName = computed(() => {
-  const names = { super_admin: '管理员', hr: 'HR', interviewer: '面试官' }
-  return names[authStore.user?.role] || ''
+  const names = { super_admin: '管理员', hr: 'HR', interviewer: '面试官', dept_manager: '部门主管' }
+  return names[user.value?.role] || ''
 })
-
-const canAccess = (...roles) => roles.includes(authStore.user?.role)
+const roleTagType = computed(() => {
+  const types = { super_admin: '', hr: 'success', interviewer: 'warning', dept_manager: 'primary' }
+  return types[user.value?.role] || ''
+})
+const canAccess = (...roles) => roles.includes(user.value?.role)
+const isDeptManager = computed(() => user.value?.role === 'dept_manager')
 
 const handleCommand = async (command) => {
   if (command === 'logout') {
     await ElMessageBox.confirm('确定要退出登录吗？', '提示', { type: 'warning' })
-    authStore.logout()
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
     router.replace('/login')
   }
 }
@@ -171,6 +172,12 @@ const handleCommand = async (command) => {
   color: #409EFF;
 }
 
+.page-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+}
+
 .header-right {
   display: flex;
   align-items: center;
@@ -192,15 +199,5 @@ const handleCommand = async (command) => {
   background: #f5f7fa;
   padding: 20px;
   overflow-y: auto;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

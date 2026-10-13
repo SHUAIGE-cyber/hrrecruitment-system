@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { Interview, Candidate, Position } = require('../models');
-const { auth, authorize, maskPhone } = require('../middleware/auth');
+const { auth, authorize, deny, maskPhone } = require('../middleware/auth');
 const { summarizeInterview } = require('../services/aiService');
 
 router.use(maskPhone);
+router.use(auth, deny('dept_manager'));
 
 // 获取面试列表
 router.get('/', auth, async (req, res) => {

@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { Offer, Candidate, Position } = require('../models');
-const { auth, authorize, maskPhone } = require('../middleware/auth');
+const { auth, authorize, deny, maskPhone } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
 router.use(maskPhone);
+router.use(auth, deny('dept_manager'));
 
 // 获取 Offer 列表
 router.get('/', auth, async (req, res) => {

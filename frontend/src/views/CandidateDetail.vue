@@ -1,162 +1,161 @@
 <template>
   <div class="candidate-detail" v-loading="loading">
-    <el-page-header @back="$router.back()" :title="'返回'">
-      <template #content>
-        <span class="page-title">候选人详情</span>
-      </template>
-    </el-page-header>
-
-    <el-row :gutter="16" class="content-row">
-      <!-- 基本信息 -->
+    <el-row :gutter="16">
+      <!-- 左列：基本信息 -->
       <el-col :span="8">
-        <el-card class="info-card">
-          <template #header>
-            <span class="card-title">基本信息</span>
-          </template>
+        <el-card>
+          <template #header><span class="card-title">👤 基本信息</span></template>
           <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">姓名</span>
-              <span class="info-value">{{ candidate.name }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">性别</span>
-              <span class="info-value">{{ candidate.gender || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">年龄</span>
-              <span class="info-value">{{ candidate.age || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">电话</span>
-              <span class="info-value">{{ maskPhone(candidate.phone) }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">邮箱</span>
-              <span class="info-value">{{ candidate.email || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">城市</span>
-              <span class="info-value">{{ candidate.location || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">学历</span>
-              <span class="info-value">{{ candidate.education || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">学校</span>
-              <span class="info-value">{{ candidate.university || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">专业</span>
-              <span class="info-value">{{ candidate.major || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">工作经验</span>
-              <span class="info-value">{{ candidate.workExperience || 0 }}年</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">当前薪资</span>
-              <span class="info-value">{{ candidate.currentSalary ? candidate.currentSalary + 'K' : '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">期望薪资</span>
-              <span class="info-value">{{ candidate.expectedSalary ? candidate.expectedSalary + 'K' : '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">到岗时间</span>
-              <span class="info-value">{{ candidate.noticePeriod || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">微信</span>
-              <span class="info-value">{{ candidate.wechat || '-' }}</span>
-            </div>
+            <div class="info-item"><span class="info-label">姓名</span><span class="info-value">{{ candidate.name || '-' }}</span></div>
+            <div class="info-item"><span class="info-label">性别</span><span class="info-value">{{ candidate.gender || '-' }}</span></div>
+            <div class="info-item"><span class="info-label">年龄</span><span class="info-value">{{ candidate.age || '-' }}</span></div>
+            <div class="info-item"><span class="info-label">电话</span><span class="info-value">{{ maskPhone(candidate.phone) }}</span></div>
+            <div class="info-item"><span class="info-label">邮箱</span><span class="info-value">{{ candidate.email || '-' }}</span></div>
+            <div class="info-item"><span class="info-label">城市</span><span class="info-value">{{ candidate.location || '-' }}</span></div>
+            <div class="info-item"><span class="info-label">学历</span><span class="info-value">{{ candidate.education || '-' }}</span></div>
+            <div class="info-item"><span class="info-label">学校</span><span class="info-value">{{ candidate.university || '-' }}</span></div>
+            <div class="info-item"><span class="info-label">专业</span><span class="info-value">{{ candidate.major || '-' }}</span></div>
+            <div class="info-item"><span class="info-label">工作年限</span><span class="info-value">{{ candidate.workExperience ?? '-' }}年</span></div>
           </div>
 
-          <!-- AI 标签 -->
-          <div class="tags-section" v-if="candidate.aiTags?.length">
-            <div class="section-title">AI 标签</div>
-            <el-tag
-              v-for="(tag, i) in candidate.aiTags"
-              :key="i"
-              size="small"
-              class="tag-item"
-            >{{ tag }}</el-tag>
+          <div v-if="candidate.aiTags?.length" style="margin-top:16px">
+            <div class="section-title">🏷️ AI标签</div>
+            <el-tag v-for="(tag, i) in candidate.aiTags" :key="i" size="small" style="margin:2px">{{ tag }}</el-tag>
           </div>
 
-          <!-- 匹配度 -->
-          <div class="match-section" v-if="candidate.matchScore">
-            <div class="section-title">JD 匹配度</div>
-            <el-progress
-              :percentage="candidate.matchScore"
-              :status="candidate.matchScore >= 80 ? 'success' : candidate.matchScore >= 60 ? '' : 'exception'"
-              :format="() => candidate.matchScore + '分'"
-            />
-            <div class="match-reason" v-if="candidate.matchReason">{{ candidate.matchReason }}</div>
+          <!-- 查看原始简历 -->
+          <div style="margin-top:16px;border-top:1px solid #ebeef5;padding-top:12px">
+            <el-button v-if="candidate.resumeFile" type="primary" plain style="width:100%" @click="viewResume">
+              查看完整简历
+            </el-button>
+            <el-button v-else plain disabled style="width:100%">无简历文件</el-button>
           </div>
         </el-card>
-      </el-col>
 
-      <!-- 面试记录 -->
-      <el-col :span="16">
-        <el-card>
+        <!-- 匹配打分卡片 -->
+        <el-card style="margin-top:16px">
           <template #header>
-            <div class="card-header">
-              <span class="card-title">面试记录</span>
-              <el-button type="primary" size="small" @click="handleAddInterview" v-if="canEdit">
-                + 添加面试
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="card-title">🎯 JD匹配打分</span>
+              <el-button v-if="positions.length" size="small" type="primary" :loading="matchLoading" @click="runMatchScore">
+                开始打分
               </el-button>
             </div>
           </template>
 
-          <el-timeline>
+          <!-- 选择岗位 -->
+          <el-select v-model="selectedPositionId" placeholder="选择要匹配的岗位" style="width:100%;margin-bottom:12px" @change="resetMatch">
+            <el-option v-for="p in positions" :key="p._id" :label="`${p.name} (${p.department})`" :value="p._id" />
+          </el-select>
+
+          <!-- 评分结果 -->
+          <div v-if="matchResult" class="match-result">
+            <div style="text-align:center;margin:12px 0">
+              <el-progress type="dashboard" :percentage="matchResult.score" :width="140" :color="matchColor">
+                <template #default>
+                  <div style="font-size:28px;font-weight:bold">{{ matchResult.score }}</div>
+                  <div style="font-size:12px;color:#999">匹配度</div>
+                </template>
+              </el-progress>
+            </div>
+
+            <!-- 分维度评分 -->
+            <div v-if="matchResult.dimensions" style="margin-top:12px">
+              <div v-for="(dim, key) in matchResult.dimensions" :key="key" style="margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;font-size:12px">
+                  <span>{{ dimName(key) }}</span>
+                  <span style="color:#409EFF">{{ dim.score }}分</span>
+                </div>
+                <el-progress :percentage="dim.score" :show-text="false" :stroke-width="8" :color="dim.score >= 80 ? '#67C23A' : dim.score >= 60 ? '#E6A23C' : '#F56C6C'" />
+                <div style="font-size:11px;color:#909399">{{ dim.comment }}</div>
+              </div>
+            </div>
+
+            <!-- 匹配理由 -->
+            <div v-if="matchResult.matchReason" style="margin-top:8px">
+              <div class="section-title">💡 匹配理由</div>
+              <div class="match-reason-text">{{ matchResult.matchReason }}</div>
+            </div>
+
+            <!-- 优势和差距 -->
+            <div v-if="matchResult.strengths?.length" style="margin-top:8px">
+              <div class="section-title" style="color:#67C23A">✅ 优势</div>
+              <div v-for="(s, i) in matchResult.strengths" :key="i" style="font-size:12px;margin:2px 0">• {{ s }}</div>
+            </div>
+            <div v-if="matchResult.gaps?.length" style="margin-top:8px">
+              <div class="section-title" style="color:#F56C6C">⚠️ 差距</div>
+              <div v-for="(g, i) in matchResult.gaps" :key="i" style="font-size:12px;margin:2px 0">• {{ g }}</div>
+            </div>
+          </div>
+          <el-empty v-else-if="selectedPositionId" description="点击「开始打分」进行AI匹配分析" :image-size="60" />
+          <el-empty v-else description="先选择岗位" :image-size="60" />
+        </el-card>
+      </el-col>
+
+      <!-- 右列：面试记录 -->
+      <el-col :span="16">
+        <el-card>
+          <template #header>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="card-title">📅 面试记录</span>
+              <el-button size="small" type="primary" @click="handleAddInterview">+ 添加面试</el-button>
+            </div>
+          </template>
+
+          <el-timeline v-if="candidate.interviews?.length">
             <el-timeline-item
               v-for="(interview, index) in candidate.interviews"
               :key="index"
               :timestamp="formatDate(interview.interviewDate || interview.createdAt)"
-              :type="getInterviewType(interview)"
-              :color="getInterviewColor(interview)"
+              :type="interview.score >= 80 ? 'success' : interview.score >= 60 ? 'primary' : 'danger'"
             >
-              <el-card class="interview-card">
-                <div class="interview-header">
-                  <span class="interview-stage">{{ getStageName(interview.stage) }}</span>
-                  <el-tag size="small" :type="getInterviewStatusType(interview.status)">
-                    {{ getInterviewStatusName(interview.status) }}
+              <el-card>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                  <span style="font-weight:600">{{ getStageName(interview.stage) }}</span>
+                  <el-tag size="small" :type="interview.score >= 80 ? 'success' : interview.score >= 60 ? 'warning' : 'danger'">
+                    {{ interview.score || '未评分' }}分
                   </el-tag>
                 </div>
-                <div class="interview-body">
-                  <p v-if="interview.interviewer"><strong>面试官：</strong>{{ interview.interviewer }}</p>
-                  <p v-if="interview.score"><strong>评分：</strong><span :class="getScoreClass(interview.score)">{{ interview.score }}分</span></p>
-                  <p v-if="interview.evaluation"><strong>评价：</strong>{{ interview.evaluation }}</p>
-                  <p v-if="interview.aiSummary" class="ai-summary">
-                    <strong>AI 总结：</strong>{{ interview.aiSummary }}
+                <div style="font-size:13px;color:#606266;line-height:1.8">
+                  <p v-if="interview.interviewer">面试官：{{ interview.interviewer }}</p>
+                  <p v-if="interview.evaluation">评价：{{ interview.evaluation }}</p>
+                  <p v-if="interview.aiSummary" style="color:#409EFF;background:#ecf5ff;padding:8px;border-radius:4px">
+                    🤖 AI总结：{{ interview.aiSummary }}
                   </p>
-                  <p v-if="interview.reason" class="reject-reason">
-                    <strong>淘汰原因：</strong>{{ interview.reason }}
-                  </p>
+                  <p v-if="interview.reason" style="color:#F56C6C">淘汰原因：{{ interview.reason }}</p>
                 </div>
-                <div class="interview-actions" v-if="canEdit">
+                <div style="margin-top:8px;display:flex;gap:8px">
                   <el-button size="small" @click="handleEditInterview(interview)">编辑</el-button>
-                  <el-button size="small" type="success" @click="handleAISummarize(interview)">AI 总结</el-button>
+                  <el-button size="small" type="success" :loading="summarizeLoadingId === interview._id" @click="handleAISummarize(interview)">
+                    AI总结
+                  </el-button>
+                  <el-button size="small" type="warning" :loading="questionsLoadingId === interview._id" @click="handleGenerateQuestions(interview)">
+                    AI面试题
+                  </el-button>
+                </div>
+
+                <!-- 面试题展示 -->
+                <div v-if="interview.questions?.length" style="margin-top:8px;border-top:1px dashed #ddd;padding-top:8px">
+                  <div style="font-weight:600;font-size:13px;margin-bottom:4px">📝 AI生成的面试题：</div>
+                  <div v-for="(q, qi) in interview.questions" :key="qi" style="font-size:12px;margin:4px 0;background:#f5f7fa;padding:6px;border-radius:4px">
+                    <b>{{ qi + 1 }}. {{ q.question }}</b>
+                    <span style="color:#909399">【{{ q.type }}·{{ q.difficulty || '中等' }}】</span>
+                    <div v-if="q.focus" style="color:#606266">考察：{{ q.focus }}</div>
+                  </div>
                 </div>
               </el-card>
             </el-timeline-item>
           </el-timeline>
-
-          <el-empty v-if="!candidate.interviews?.length" description="暂无面试记录" />
+          <el-empty v-else description="暂无面试记录" />
         </el-card>
       </el-col>
     </el-row>
 
     <!-- 添加/编辑面试弹窗 -->
-    <el-dialog
-      v-model="interviewDialogVisible"
-      :title="interviewEditId ? '编辑面试' : '添加面试'"
-      width="600px"
-      destroy-on-close
-    >
+    <el-dialog v-model="interviewDialogVisible" :title="interviewEditId ? '编辑面试' : '添加面试'" width="600px" destroy-on-close>
       <el-form ref="interviewFormRef" :model="interviewForm" :rules="interviewRules" label-width="100px">
         <el-form-item label="面试阶段" prop="stage">
-          <el-select v-model="interviewForm.stage" placeholder="请选择阶段" style="width: 100%">
+          <el-select v-model="interviewForm.stage" style="width:100%">
             <el-option label="简历初筛" value="resume_screen" />
             <el-option label="一面" value="interview_1" />
             <el-option label="二面" value="interview_2" />
@@ -165,24 +164,19 @@
           </el-select>
         </el-form-item>
         <el-form-item label="面试官">
-          <el-input v-model="interviewForm.interviewer" placeholder="请输入面试官姓名" />
+          <el-input v-model="interviewForm.interviewer" placeholder="面试官姓名" />
         </el-form-item>
         <el-form-item label="面试时间">
-          <el-date-picker
-            v-model="interviewForm.interviewDate"
-            type="datetime"
-            placeholder="选择面试日期时间"
-            style="width: 100%"
-          />
+          <el-date-picker v-model="interviewForm.interviewDate" type="datetime" placeholder="选择时间" style="width:100%" />
         </el-form-item>
         <el-form-item label="评分">
           <el-slider v-model="interviewForm.score" :min="0" :max="100" show-input />
         </el-form-item>
         <el-form-item label="面试评价">
-          <el-input v-model="interviewForm.evaluation" type="textarea" :rows="4" placeholder="请输入面试评价" />
+          <el-input v-model="interviewForm.evaluation" type="textarea" :rows="4" placeholder="面试评价/手记" />
         </el-form-item>
-        <el-form-item label="淘汰原因" v-if="interviewForm.status === 'rejected'">
-          <el-input v-model="interviewForm.reason" type="textarea" :rows="2" placeholder="请输入淘汰原因" />
+        <el-form-item label="淘汰原因" v-if="interviewForm.reason !== undefined">
+          <el-input v-model="interviewForm.reason" type="textarea" :rows="2" placeholder="如淘汰请填写原因" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -196,21 +190,25 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { candidateAPI, interviewAPI } from '../api'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { candidateAPI, interviewAPI, positionAPI } from '../api.js'
+import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../stores/auth'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const loading = ref(false)
+const candidate = ref({})
+const positions = ref([])
+const selectedPositionId = ref('')
+const matchLoading = ref(false)
+const matchResult = ref(null)
+const summarizeLoadingId = ref(null)
+const questionsLoadingId = ref(null)
+
 const interviewDialogVisible = ref(false)
 const interviewSubmitLoading = ref(false)
 const interviewEditId = ref(null)
 const interviewFormRef = ref(null)
-const candidate = ref({})
-const candidateInterviews = ref([])
-
-const canEdit = computed(() => ['super_admin', 'hr'].includes(authStore.user?.role))
 
 const interviewForm = reactive({
   stage: 'interview_1',
@@ -218,88 +216,92 @@ const interviewForm = reactive({
   interviewDate: null,
   score: 60,
   evaluation: '',
-  reason: '',
-  status: 'scheduled'
+  reason: ''
 })
 
 const interviewRules = {
   stage: [{ required: true, message: '请选择面试阶段', trigger: 'change' }]
 }
 
+const matchColor = computed(() => {
+  if (!matchResult.value) return '#409EFF'
+  const s = matchResult.value.score
+  if (s >= 80) return '#67C23A'
+  if (s >= 60) return '#E6A23C'
+  return '#F56C6C'
+})
+
+const dimName = (key) => ({ education: '学历', experience: '经验', skills: '技能', age: '年龄' }[key] || key)
+
 const maskPhone = (phone) => {
-  if (!phone || authStore.user?.role === 'super_admin' || authStore.user?.role === 'hr') return phone
+  if (!phone) return '-'
+  const role = authStore.user?.role
+  if (role === 'super_admin' || role === 'hr') return phone
   return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
 }
 
-const getStageName = (stage) => {
-  const names = {
-    resume_screen: '简历初筛',
-    interview_1: '一面',
-    interview_2: '二面',
-    interview_3: '终面',
-    offer: 'Offer',
-    onboard: '待入职',
-    rejected: '淘汰'
-  }
-  return names[stage] || stage
-}
+const getStageName = (stage) => ({
+  resume_screen: '简历初筛', interview_1: '一面', interview_2: '二面',
+  interview_3: '终面', offer: 'Offer', onboard: '待入职', rejected: '淘汰'
+}[stage] || stage)
 
-const formatDate = (date) => {
-  if (!date) return '-'
-  return new Date(date).toLocaleString('zh-CN')
-}
-
-const getInterviewType = (interview) => {
-  const types = { scheduled: 'primary', completed: 'success', cancelled: 'danger' }
-  return types[interview.status] || ''
-}
-
-const getInterviewColor = (interview) => {
-  if (interview.score >= 80) return '#67C23A'
-  if (interview.score >= 60) return '#E6A23C'
-  return '#F56C6C'
-}
-
-const getInterviewStatusName = (status) => {
-  const names = { scheduled: '已预约', completed: '已完成', cancelled: '已取消' }
-  return names[status] || status
-}
-
-const getInterviewStatusType = (status) => {
-  const types = { scheduled: 'primary', completed: 'success', cancelled: 'danger' }
-  return types[status] || ''
-}
-
-const getScoreClass = (score) => {
-  if (score >= 80) return 'score-high'
-  if (score >= 60) return 'score-medium'
-  return 'score-low'
-}
+const formatDate = (date) => date ? new Date(date).toLocaleString('zh-CN') : '-'
 
 const loadCandidate = async () => {
   loading.value = true
   try {
     const res = await candidateAPI.get(route.params.id)
-    if (res.success) {
-      candidate.value = res.data
-    }
-  } catch (error) {
-    console.error('加载候选人详情失败:', error)
+    if (res.success) candidate.value = res.data
+  } catch (e) {
+    console.error(e)
   } finally {
     loading.value = false
+  }
+}
+
+const loadPositions = async () => {
+  try {
+    const res = await positionAPI.list({ status: 'open' })
+    if (res.success) positions.value = res.data
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const resetMatch = () => {
+  matchResult.value = null
+}
+
+const viewResume = () => {
+  if (candidate.value.resumeFile) {
+    window.open(`/uploads/${candidate.value.resumeFile}`, '_blank')
+  }
+}
+
+const runMatchScore = async () => {
+  if (!selectedPositionId.value) {
+    ElMessage.warning('请先选择岗位')
+    return
+  }
+  matchLoading.value = true
+  try {
+    const res = await candidateAPI.matchScore(route.params.id, selectedPositionId.value)
+    if (res.success) {
+      matchResult.value = res.data
+      ElMessage.success(`匹配打分完成：${res.data.score}分`)
+    }
+  } catch (e) {
+    ElMessage.error('打分失败，请确认AI配置')
+  } finally {
+    matchLoading.value = false
   }
 }
 
 const handleAddInterview = () => {
   interviewEditId.value = null
   Object.assign(interviewForm, {
-    stage: 'interview_1',
-    interviewer: '',
-    interviewDate: null,
-    score: 60,
-    evaluation: '',
-    reason: '',
-    status: 'scheduled'
+    stage: 'interview_1', interviewer: '', interviewDate: null,
+    score: 60, evaluation: '', reason: ''
   })
   interviewDialogVisible.value = true
 }
@@ -307,13 +309,9 @@ const handleAddInterview = () => {
 const handleEditInterview = (interview) => {
   interviewEditId.value = interview._id
   Object.assign(interviewForm, {
-    stage: interview.stage,
-    interviewer: interview.interviewer,
+    stage: interview.stage, interviewer: interview.interviewer || '',
     interviewDate: interview.interviewDate ? new Date(interview.interviewDate) : null,
-    score: interview.score || 60,
-    evaluation: interview.evaluation || '',
-    reason: interview.reason || '',
-    status: interview.status
+    score: interview.score || 60, evaluation: interview.evaluation || '', reason: interview.reason || ''
   })
   interviewDialogVisible.value = true
 }
@@ -321,7 +319,6 @@ const handleEditInterview = (interview) => {
 const handleInterviewSubmit = async () => {
   const valid = await interviewFormRef.value.validate().catch(() => false)
   if (!valid) return
-
   interviewSubmitLoading.value = true
   try {
     const data = {
@@ -329,7 +326,6 @@ const handleInterviewSubmit = async () => {
       candidateId: route.params.id,
       interviewDate: interviewForm.interviewDate ? interviewForm.interviewDate.toISOString() : undefined
     }
-
     if (interviewEditId.value) {
       await interviewAPI.update(interviewEditId.value, data)
       ElMessage.success('更新成功')
@@ -345,149 +341,53 @@ const handleInterviewSubmit = async () => {
 }
 
 const handleAISummarize = async (interview) => {
+  summarizeLoadingId.value = interview._id
   try {
     const res = await interviewAPI.summarize(interview._id)
     if (res.success) {
-      ElMessage.success('AI 总结生成成功')
+      ElMessage.success('AI总结生成成功')
       loadCandidate()
     }
-  } catch (error) {
-    console.error('AI 总结失败:', error)
-    ElMessage.error('AI 总结失败')
+  } catch (e) {
+    ElMessage.error('AI总结失败')
+  } finally {
+    summarizeLoadingId.value = null
   }
 }
 
-onMounted(loadCandidate)
+const handleGenerateQuestions = async (interview) => {
+  if (!selectedPositionId.value) {
+    ElMessage.warning('请先在左侧选择岗位')
+    return
+  }
+  questionsLoadingId.value = interview._id
+  try {
+    const res = await candidateAPI.generateQuestions(route.params.id, selectedPositionId.value, interview.stage)
+    if (res.success) {
+      interview.questions = res.data
+      ElMessage.success('面试题生成成功')
+    }
+  } catch (e) {
+    ElMessage.error('生成失败，请确认AI配置')
+  } finally {
+    questionsLoadingId.value = null
+  }
+}
+
+onMounted(() => {
+  loadCandidate()
+  loadPositions()
+})
 </script>
 
 <style scoped>
-.candidate-detail {
-  padding: 20px;
-}
-
-.page-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-left: 12px;
-}
-
-.content-row {
-  margin-top: 16px;
-}
-
-.info-card {
-  margin-bottom: 16px;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.info-label {
-  font-size: 12px;
-  color: #909399;
-}
-
-.info-value {
-  font-size: 14px;
-  color: #303133;
-}
-
-.tags-section {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #ebeef5;
-}
-
-.section-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 8px;
-}
-
-.tag-item {
-  margin-right: 6px;
-  margin-bottom: 6px;
-}
-
-.match-section {
-  margin-top: 16px;
-}
-
-.match-reason {
-  margin-top: 8px;
-  font-size: 13px;
-  color: #606266;
-  line-height: 1.6;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.interview-card {
-  margin-bottom: 0;
-}
-
-.interview-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.interview-stage {
-  font-weight: 600;
-  color: #303133;
-}
-
-.interview-body {
-  font-size: 13px;
-  color: #606266;
-  line-height: 1.8;
-}
-
-.interview-body p {
-  margin: 4px 0;
-}
-
-.ai-summary {
-  color: #409EFF;
-  background: #ecf5ff;
-  padding: 8px;
-  border-radius: 4px;
-  margin-top: 8px !important;
-}
-
-.reject-reason {
-  color: #F56C6C;
-}
-
-.score-high { color: #67C23A; font-weight: 600; }
-.score-medium { color: #E6A23C; font-weight: 600; }
-.score-low { color: #F56C6C; font-weight: 600; }
-
-.interview-actions {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #ebeef5;
-  display: flex;
-  gap: 8px;
-}
+.candidate-detail { min-height: 400px; }
+.card-title { font-weight: 600; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.info-item { display: flex; flex-direction: column; gap: 2px; }
+.info-label { font-size: 12px; color: #909399; }
+.info-value { font-size: 14px; color: #303133; }
+.section-title { font-size: 13px; font-weight: 600; color: #303133; margin: 8px 0 4px; }
+.match-result { margin-top: 8px; }
+.match-reason-text { font-size: 12px; color: #606266; line-height: 1.8; background: #f5f7fa; padding: 8px; border-radius: 4px; }
 </style>

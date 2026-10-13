@@ -29,6 +29,16 @@ const authorize = (...roles) => {
   };
 };
 
+// 排除指定角色（如：部门主管只能访问招聘需求，其他模块禁止）
+const deny = (...roles) => {
+  return (req, res, next) => {
+    if (req.user && roles.includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: '权限不足，该模块仅限HR/管理员使用' });
+    }
+    next();
+  };
+};
+
 // 面试经理看不到手机号
 const maskPhone = async (req, res, next) => {
   const originalSend = res.json;
@@ -55,4 +65,4 @@ const maskPhone = async (req, res, next) => {
   next();
 };
 
-module.exports = { auth, authorize, maskPhone };
+module.exports = { auth, authorize, deny, maskPhone };

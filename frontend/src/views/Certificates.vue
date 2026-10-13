@@ -39,8 +39,9 @@
             {{ row.candidateId?.name || row.employeeId?.realName || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
+            <el-button link type="primary" @click="viewCertificate(row)">查看</el-button>
             <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -150,6 +151,14 @@ const loadCandidates = async () => {
 
 const handleFileChange = (file) => {
   selectedFile.value = file.raw
+}
+
+const viewCertificate = (row) => {
+  if (row.file) {
+    window.open(`/uploads/${row.file}`, '_blank')
+  } else {
+    ElMessage.warning('证书文件不存在')
+  }
 }
 
 const handleUpload = async () => {

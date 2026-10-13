@@ -4,13 +4,54 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['super_admin', 'hr', 'interviewer'], default: 'hr' },
+  role: { type: String, enum: ['super_admin', 'hr', 'interviewer', 'dept_manager'], default: 'hr' },
   department: { type: String },
   realName: { type: String },
   email: { type: String },
   phone: { type: String },
   isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+// ========== 招聘需求模型（部门主管提交 → HR/管理员审批） ==========
+const hiringRequestSchema = new mongoose.Schema({
+  // 需求方信息
+  requesterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  requesterName: { type: String },
+  department: { type: String, required: true },
+
+  // 招聘需求内容
+  positionName: { type: String, required: true },
+  headcount: { type: Number, default: 1, min: 1 },
+  location: { type: String },
+  reason: { type: String, required: true },          // 招聘原因
+  urgency: { type: String, enum: ['normal', 'urgent', 'critical'], default: 'normal' }, // 紧急程度
+  expectedDate: { type: Date },                       // 期望到岗时间
+  jd: { type: String, required: true },               // 岗位职责
+  requirements: { type: String, required: true },     // 任职要求
+  salaryMin: { type: Number },
+  salaryMax: { type: Number },
+
+  // 审批流转
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected', 'transferred'],
+    default: 'pending'
+  },
+  approverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  approverName: { type: String },
+  approvedAt: { type: Date },
+  rejectReason: { type: String },                     // 驳回原因
+  reviewComment: { type: String },                    // 审批意见
+
+  // 转成正式岗位后的关联
+  positionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Position' },
+
+  // 消息通知（谁读过）
+  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 // ========== 岗位模型 ==========
@@ -24,6 +65,16 @@ const positionSchema = new mongoose.Schema({
   salaryMin: { type: Number },
   salaryMax: { type: Number },
   salaryCurrency: { type: String, default: 'CNY' },
+  // 匹配评分标准（HR可自定义）
+  matchCriteria: {
+    minEducation: { type: String },        // 最低学历: 大专/本科/硕士/博士
+    minExperience: { type: Number },       // 最低工作年限
+    maxAge: { type: Number },              // 最大年龄
+    minAge: { type: Number },              // 最小年龄
+    preferredSkills: [String],             // 优先技能
+    requiredSkills: [String],              // 必备技能
+    preferredUniversities: [String]        // 目标院校(可选)
+  },
   status: { type: String, enum: ['open', 'paused', 'filled', 'closed'], default: 'open' },
   publishedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   filledCount: { type: Number, default: 0 },
@@ -172,5 +223,6 @@ module.exports = {
   Interview: mongoose.model('Interview', interviewSchema),
   Offer: mongoose.model('Offer', offerSchema),
   Certificate: mongoose.model('Certificate', certificateSchema),
-  Setting: mongoose.model('Setting', settingSchema)
+  Setting: mongoose.model('Setting', settingSchema),
+  HiringRequest: mongoose.model('HiringRequest', hiringRequestSchema)
 };

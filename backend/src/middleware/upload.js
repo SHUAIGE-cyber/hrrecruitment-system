@@ -28,6 +28,12 @@ const storage = multer.diskStorage({
     cb(null, `${uploadDir}/${subdir}`);
   },
   filename: (req, file, cb) => {
+    // 修复中文文件名乱码（multer默认按latin1解码，中文会变乱码）
+    try {
+      file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+    } catch (e) {
+      // 保持原样
+    }
     // 生成唯一文件名，保留原始扩展名
     const ext = path.extname(file.originalname).toLowerCase() || '.bin';
     const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
@@ -36,6 +42,10 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
+  // 修复中文文件名乱码
+  try {
+    file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+  } catch (e) {}
   const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.txt', '.bmp', '.tiff'];
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowedTypes.includes(ext)) {

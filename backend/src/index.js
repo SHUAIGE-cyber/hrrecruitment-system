@@ -29,6 +29,7 @@ app.use('/api/offers', require('./routes/offers'));
 app.use('/api/certificates', require('./routes/certificates'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/hiring-requests', require('./routes/hiringRequests'));
 
 // 健康检查
 app.get('/api/health', (req, res) => {

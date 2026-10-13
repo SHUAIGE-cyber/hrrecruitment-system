@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { Candidate, Position, Interview, Offer } = require('../models');
-const { auth } = require('../middleware/auth');
+const { auth, deny } = require('../middleware/auth');
 const ExcelJS = require('exceljs');
+
+// 部门主管无权访问仪表盘
+router.use(auth, deny('dept_manager'));
 
 // 获取仪表盘数据
 router.get('/dashboard', auth, async (req, res) => {

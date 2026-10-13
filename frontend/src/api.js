@@ -93,6 +93,15 @@ export const interviewAPI = {
   summarize: (id) => api.post(`/interviews/${id}/summarize`)
 }
 
+export const hiringRequestAPI = {
+  list: (params) => api.get('/hiring-requests', { params }),
+  get: (id) => api.get(`/hiring-requests/${id}`),
+  create: (data) => api.post('/hiring-requests', data),
+  review: (id, data) => api.post(`/hiring-requests/${id}/review`, data),
+  transfer: (id) => api.post(`/hiring-requests/${id}/transfer`),
+  delete: (id) => api.delete(`/hiring-requests/${id}`)
+}
+
 export const offerAPI = {
   list: (params) => api.get('/offers', { params }),
   get: (id) => api.get(`/offers/${id}`),

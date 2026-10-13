@@ -3,24 +3,29 @@ node_modules/
 frontend/node_modules/
 backend/node_modules/
 
-# 环境变量
+# 环境变量（含API Key，绝不能提交）
 .env
+.env.*
+!.env.example
 backend/.env
+backend/.env.bak
 
 # 日志
 *.log
 logs/
-/tmp/
 
-# 上传文件
+# 上传的文件（用户数据）
 uploads/
 backend/uploads/
+
+# 编译产物
+backend/scripts/ocr
+dist/
 
 # IDE
 .vscode/
 .idea/
 *.swp
-*.swo
 
 # macOS
 .DS_Store

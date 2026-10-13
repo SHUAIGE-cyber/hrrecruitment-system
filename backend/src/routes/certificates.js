@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { Certificate, Candidate } = require('../models');
-const { auth, authorize, maskPhone } = require('../middleware/auth');
+const { auth, authorize, deny, maskPhone } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const { extractCertificateInfo } = require('../services/aiService');
 const { extractText } = require('../services/documentService');
 
 router.use(maskPhone);
+router.use(auth, deny('dept_manager'));
 
 // 获取证书列表
 router.get('/', auth, async (req, res) => {

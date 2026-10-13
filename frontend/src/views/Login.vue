@@ -58,7 +58,12 @@ const handleLogin = async () => {
       localStorage.setItem('token', data.data.token)
       localStorage.setItem('user', JSON.stringify(data.data.user))
       ElMessage.success('登录成功')
-      router.push('/dashboard')
+      // 部门主管登录后直接进入招聘需求页
+      if (data.data.user.role === 'dept_manager') {
+        router.push('/hiring-requests')
+      } else {
+        router.push('/dashboard')
+      }
     } else {
       ElMessage.error(data.message || '登录失败')
     }
